@@ -84,3 +84,22 @@ Per ligand, per receptor: `.dlg` (full log), `.xml` (machine-readable), `_best.p
 - Repositories: AutoDock-GPU — https://github.com/ccsb-scripps/AutoDock-GPU · ADFRsuite — https://ccsb.scripps.edu/adfr/
 
 Cite the specific AutoDock-GPU commit/release compiled in Step 2 — scoring behaviour is not guaranteed stable across versions.
+
+## Citing This Pipeline
+
+If Dock-GPU is used to generate docking results reported in a publication, thesis, or preprint, cite the repository directly, in addition to the underlying AutoDock-GPU/ADFRsuite/Meeko citations listed in `README.md`:
+
+**Repository citation:**
+Dock-GPU: A GPU-Accelerated Rigid/Flexible Receptor Docking Pipeline for Google Colab. GitHub repository: https://github.com/MANAV2502/Dock-GPU
+
+**BibTeX:**
+```bibtex
+@software{dockgpu2026,
+  title  = {Dock-GPU: A GPU-Accelerated Rigid/Flexible Receptor Docking Pipeline for Google Colab},
+  author = {{Dock-GPU Contributors}},
+  year   = {2026},
+  url    = {https://github.com/MANAV2502/Dock-GPU}
+}
+```
+
+Include the specific commit hash of the repository used at the time of the docking run (e.g., via `git rev-parse HEAD` or the commit visible in the GitHub UI), since the rigid/flexible scripts and notebook may be revised over time and downstream reproducibility depends on pinning the exact version consulted.
