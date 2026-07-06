@@ -8,7 +8,7 @@
 
 Dock-GPU is a Colab front end for **AutoDock-GPU**. The notebook handles GPU/CUDA setup, file staging, and results retrieval via `#@param` cells; one of two Bash scripts (`gpu_rigid_colab_docking.sh`/`gpu_flexible_colab_docking.sh`) performs the actual docking, chosen by whether the receptor is rigid or carries flexible side chains. Either script can also run standalone on any CUDA-capable Linux machine.
 
-**Scope:** Structure-based virtual screening, docking prepared ligand `.pdbqt` files against `AutoGrid4` receptor maps via AutoDock-GPU's GPU-parallelized LGA. Receptor/ligand preparation (protonation, charges, torsion trees, grid boxes) must already be done upstream. For flexible campaigns, the receptor must be split into a rigid PDBQT and a `<receptor_name>_flex.pdbqt`, this is what the flexible script's auto-detection keys on.
+**Scope:** Structure-based virtual screening, docking prepared ligand `.pdbqt` files against `AutoGrid4` receptor maps via AutoDock-GPU's GPU-parallelized LGA. Receptor/ligand preparation (protonation, charges, torsion trees, grid boxes) must already be done upstream. For flexible campaigns, the receptor must be split into a rigid PDBQT and a `<receptor_name>_flex.pdbqt`, this is what the flexible script's auto-detection keys on. Can be used for more than one receptor at a time, i.e, docking same set of ligand for more than one receptors.
 
 ## Prerequisites
 
