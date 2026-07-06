@@ -1,35 +1,36 @@
 # Dock-GPU: GPU-Accelerated Rigid/Flexible Receptor Docking Pipeline
 
-**Notebook:** `Dock_GPU.ipynb` (titled **Dock-GPU** internally)
+**Notebook:** `Dock_GPU.ipynb`
+
 **Engines:** `gpu_rigid_colab_docking.sh` · `gpu_flexible_colab_docking.sh`
 
 ## Overview
 
 Dock-GPU is a Colab front end for **AutoDock-GPU**. The notebook handles GPU/CUDA setup, file staging, and results retrieval via `#@param` cells; one of two Bash scripts (`gpu_rigid_colab_docking.sh`/`gpu_flexible_colab_docking.sh`) performs the actual docking, chosen by whether the receptor is rigid or carries flexible side chains. Either script can also run standalone on any CUDA-capable Linux machine.
 
-**Scope:** structure-based virtual screening, docking prepared ligand `.pdbqt` files against `AutoGrid4` receptor maps via AutoDock-GPU's GPU-parallelized LGA. Receptor/ligand preparation (protonation, charges, torsion trees, grid boxes) must already be done upstream (e.g. ADFRsuite, Meeko). For flexible campaigns, the receptor must be split into a rigid PDBQT and a `<receptor_name>_flex.pdbqt`, per the `prepare_flexreceptor4.py` convention — this is what the flexible script's auto-detection keys on.
+**Scope:** Structure-based virtual screening, docking prepared ligand `.pdbqt` files against `AutoGrid4` receptor maps via AutoDock-GPU's GPU-parallelized LGA. Receptor/ligand preparation (protonation, charges, torsion trees, grid boxes) must already be done upstream. For flexible campaigns, the receptor must be split into a rigid PDBQT and a `<receptor_name>_flex.pdbqt`, this is what the flexible script's auto-detection keys on.
 
 ## Prerequisites
 
 - **Receptor:** `.fld` + `.map` files and rigid `.pdbqt` (plus `_flex.pdbqt` if flexible), one named subfolder per receptor
 - **Ligands:** individual `.pdbqt` files, already protonated with torsion trees assigned
-- **Docking script:** matching rigid/flexible mode
-- **Colab GPU runtime** — compiled CUDA version must match the runtime's `nvcc` version (checked in Step 1/2)
+- **Docking script:** matching rigid/flexible mode (`gpu_rigid_colab_docking.sh`/`gpu_flexible_colab_docking.sh`)
+- **Colab GPU runtime:** compiled AutoDock-GPU's CUDA version must match the runtime's `nvcc` version (checked in Step 1/2)
 
 ## Notebook Steps
 
 | Step | Purpose |
 |---|---|
-| 1 — System check | GPU, CUDA, GCC verification |
-| 2 — Build | Clone + compile AutoDock-GPU (`DEVICE=CUDA`, `NUMWI=256`) |
-| 3 — Directory setup | Creates `docking/` working directory |
-| 4 — Receptor upload | File picker / ZIP / Drive → `docking/rigid_flexible/<protein_name>/` |
-| 5 — Ligand upload | Same options → `docking/ligand/` |
-| 6 — Script upload | Any `.sh` filename accepted; name persisted for later steps |
-| 7 — File-count check | Confirms uploads before committing GPU time |
-| 8 — Run docking | Fixes line endings, sets permissions, launches script |
-| 9 — Results | Verifies output counts (3 files/ligand), packages `results.tar.gz` |
-| 10 — Batch reset | Clears ligand/results dirs to re-run against the same receptor |
+| 1. System check | GPU, CUDA, GCC verification |
+| 2. Build | Clone + compile AutoDock-GPU (`DEVICE=CUDA`, `NUMWI=256`) |
+| 3. Directory setup | Creates `docking/` working directory |
+| 4. Receptor upload | File picker / ZIP / Drive → `docking/rigid_flexible/<protein_name>/` |
+| 5. Ligand upload | Same options → `docking/ligand/` |
+| 6. Script upload | Any `.sh` filename accepted; name persisted for later steps |
+| 7. File-count check | Confirms uploads before committing GPU time |
+| 8. Run docking | Fixes line endings, sets permissions, launches script |
+| 9. Results | Verifies output counts (3 files/ligand), packages `results.tar.gz` |
+|10. Batch reset | Clears ligand/results dirs to re-run against the same receptor |
 
 Uploads are flattened on extraction (no nested subfolders) so file discovery stays predictable regardless of local ZIP structure; the persisted script name lets Steps 8+ survive a runtime restart.
 
@@ -37,7 +38,24 @@ Uploads are flattened on extraction (no nested subfolders) so file discovery sta
 
 Both scripts share: configurable paths → docking parameters → behaviour controls (timeout, energy sanity threshold, disk check) → logging/CSV init → validation helpers (FLD integrity, ligand PDBQT checks, best-energy extraction) → pre-flight checks (GPU, binary auto-select, versioning) → ligand pre-validation → docking loop → summary.
 
-**Default parameters:** `--nev 250000`, `--heurmax 1000000`, `--nrun 5`, population `75`, generations `5000`, `--lsmet ad` (ADADELTA), `--lsit 750`, `--autostop 1` (`--asfreq 5`, `--stopstd 0.1`), `--clustering 1`, `--gbest 1`, XML + DLG output enabled. `TIMEOUT_SECONDS` (300s/ligand) and `ENERGY_SANITY_THRESHOLD` (−20.0 kcal/mol) are tunable per campaign.
+**Default parameters:** 
+| Flag | Default | Meaning |
+|---|---|---|
+| `--nev` | 250000 | Maximum number of energy evaluations per run |
+| `--heurmax` | 1000000 | Ceiling for the heuristics-based evaluation estimate |
+| `--nrun` | 5 | Independent LGA runs per ligand |
+| `-p` (population) | 75 | GA population size |
+| `-g` (generations) | 5000 | Maximum generations per run |
+| `--lsmet` | `ad` (ADADELTA) | Local search method |
+| `--lsit` | 750 | Local search iterations |
+| `--autostop` | 1 (enabled) | Early termination on convergence |
+| `--asfreq` | 5 | Autostop check frequency |
+| `--stopstd` | 0.1 | Convergence standard-deviation threshold |
+| `--clustering` | 1 (enabled) | Cluster docked poses by RMSD |
+| `--gbest` | 1 (enabled) | Track global best pose across runs |
+| `--xmloutput` / `--dlgoutput` | 1 / 1 | Emit XML and DLG result files |
+
+Both `TIMEOUT_SECONDS` (default 300 s per ligand) and `ENERGY_SANITY_THRESHOLD` (default −20.0 kcal/mol, flagging suspiciously favorable predicted affinities that often indicate a grid or protonation artifact rather than genuine high-affinity binding) are exposed for tuning per campaign.
 
 **Flexible script adds:**
 - Auto-detects and injects `--flexres` from `<receptor_name>_flex.pdbqt`
@@ -52,7 +70,7 @@ Per ligand, per receptor: `.dlg` (full log), `.xml` (machine-readable), `_best.p
 
 ## Troubleshooting
 
-- **Build fails:** CUDA version in the compile cell doesn't match `nvcc --version` — update both `cuda-12.8` references
+- **Build fails:** CUDA version in the compile cell doesn't match `nvcc --version` — update both such that both are same
 - **`skipped_no_fld`/`skipped_ambiguous_fld`:** receptor subfolder has zero or multiple `.maps.fld` files
 - **`--flexres` not applied:** flexres file must be named exactly `<receptor_name>_flex.pdbqt` (detection is filename-based, not content-based)
 - **Result count ≠ 3× ligands:** check the CSV status column for `timeout`/`failed`/`no_dlg`/`no_poses`
