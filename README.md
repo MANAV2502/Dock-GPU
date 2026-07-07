@@ -96,7 +96,7 @@ Dock-GPU: A GPU-Accelerated Rigid/Flexible Receptor Docking Pipeline for Google 
 ```bibtex
 @software{dockgpu2026,
   title  = {Dock-GPU: A GPU-Accelerated Rigid/Flexible Receptor Docking Pipeline for Google Colab},
-  author = {{Dock-GPU Contributors}},
+  author = {{Manav Patel}},
   year   = {2026},
   url    = {https://github.com/MANAV2502/Dock-GPU}
 }
